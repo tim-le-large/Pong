@@ -1,7 +1,6 @@
-import random
-
 import numpy as np
 import pygame
+import random
 
 from ball import Ball
 from paddle import Paddle
@@ -28,7 +27,7 @@ class GUI:
         self.curr_vel_y = 1
         self.episodes = 0
         self.error = 0
-        self.training = False
+        self.training = True
         self.speed = 20
         self.q = {}
         # init board
@@ -44,23 +43,10 @@ class GUI:
         # init paddleTwo
         self.paddleTwo = Paddle(PADDLE_X * PIXEL_SIZE, PADDLE_Y * PIXEL_SIZE, (SIZE_X - PADDLE_X) * PIXEL_SIZE)
         self.all_sprites_list.add(self.paddleTwo)
-        # init q table with random numbers or load file
         if self.training:
-            for paddle1_y in range(MAX_STATES[0]):
-                for ball_x in range(MAX_STATES[1]):
-                    for ball_y in range(MAX_STATES[2]):
-                        for vel_x in range(MAX_STATES[3]):
-                            for vel_y in range(MAX_STATES[4]):
-
-                                state = self.get_state(
-                                    [paddle1_y, ball_x, ball_y, vel_x, vel_y])
-                                action = {}
-                                for move in range(2):
-                                    action.update({move: random.uniform(-0.1, 0.1)})
-
-                                self.q.update({state: action})
+            self.q = self.init_states()
         else:
-            self.q = np.load('brain.npy', allow_pickle=True)[()]
+            self.q = np.load('brain_hard.npy', allow_pickle=True)[()]
 
     def run_game(self):
         carry_on = True
@@ -75,6 +61,10 @@ class GUI:
                     self.curr_paddle_two_y -= 1
                 if pressed[pygame.K_s]:
                     self.curr_paddle_two_y += 1
+                if pressed[pygame.K_1]:
+                    self.q = self.init_states()
+                if pressed[pygame.K_2]:
+                    self.q = np.load('brain_hard.npy', allow_pickle=True)[()]
 
             curr_state = self.observation()
             move_up = self.decision(curr_state)
@@ -82,7 +72,25 @@ class GUI:
             self.reward(curr_state, move_up)
             # clock.tick(self.speed)
         pygame.quit()
-        np.save("brain.npy", self.q)
+        # np.save("brain.npy", self.q)
+
+    def init_states(self):
+        # init q table with random numbers or load file
+        q = {}
+        for paddle1_y in range(MAX_STATES[0]):
+            for ball_x in range(MAX_STATES[1]):
+                for ball_y in range(MAX_STATES[2]):
+                    for vel_x in range(MAX_STATES[3]):
+                        for vel_y in range(MAX_STATES[4]):
+
+                            state = self.get_state(
+                                [paddle1_y, ball_x, ball_y, vel_x, vel_y])
+                            action = {}
+                            for move in range(2):
+                                action.update({move: random.uniform(-0.1, 0.1)})
+
+                            q.update({state: action})
+        return q
 
     def get_state(self, states):
         s = states[0]
