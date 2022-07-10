@@ -1,6 +1,7 @@
+import random
+
 import numpy as np
 import pygame
-import random
 
 from ball import Ball
 from paddle import Paddle
@@ -70,7 +71,7 @@ class GUI:
             move_up = self.decision(curr_state)
             self.action(move_up)
             self.reward(curr_state, move_up)
-            # clock.tick(self.speed)
+            clock.tick(self.speed)
         pygame.quit()
         # np.save("brain.npy", self.q)
 
